@@ -26,12 +26,17 @@ def parse_group(node, relevant_tags):
     group = OrderedDict()
     for element in node:
         # the if/else clause is just for 'peripheral' nodes
+        # todo: move to separate function?
         if element.get("derivedFrom") is None:
             group[element.find(relevant_tags[0]).text] = parse_individual(element, relevant_tags[1:])
         else:
             # this is an instance that dervies
             if INSTANCES_KEY not in group[element.find(GROUP_KEY).text]:
                 group[element.find(GROUP_KEY).text][INSTANCES_KEY] = OrderedDict()
+                instance = OrderedDict()
+                for kv in element:
+                    instance[kv.tag] = kv.text
+                    group[element.find(GROUP_KEY).text][INSTANCES_KEY].update({element.find("name").text : instance})
             else:
                 # add instance
                 instance = OrderedDict()
@@ -44,10 +49,13 @@ def parse_group(node, relevant_tags):
 
 def run(file):
     try:
-        device = et.parse(file).getroot()
+        device_node = et.parse(file).getroot()
     except:
         print "SVD parser: invalid file"
         return None
-    peripherals_node = device.find("peripherals")
+    peripherals_node = device_node.find("peripherals")
+    device = OrderedDict()
+
     peripherals = parse_group(peripherals_node, ["groupName", "registers", "name", "fields", "name"])
-    return peripherals
+    device[device_node.find("name").text] = peripherals
+    return device
