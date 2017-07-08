@@ -4,45 +4,57 @@ import xml.etree.ElementTree as et
 from collections import OrderedDict
 import sys
 
-
-GROUP_KEY = "groupName"
 INSTANCES_KEY = "otherInstances"
+
+# strip digits at the end of a name
+# ------------------------------------------------------------------------------
+def normalize(name):
+    while name[len(name)-1].isdigit() == True:
+        name = name[:-1]
+    return name.title()
 
 # ------------------------------------------------------------------------------
 
-def parse_individual(node, relevant_tags):
+def parse_instance(node):
+    instance = OrderedDict()
+    for kv in node:
+        instance[kv.tag] = kv.text
+    return instance
+
+# ------------------------------------------------------------------------------
+
+def parse_individual(node):
+    if node is None:
+        return OrderedDict()
     individual = OrderedDict()
     for element in node:
         if len(list(element.iter())) == 1:
             individual[element.tag] = element.text
-        elif element.tag == relevant_tags[0]:
-            individual[element.tag] = parse_group(element, relevant_tags[1:])
+        else:
+            individual[element.tag] = parse_group(element)
 
     return individual
 
 # ------------------------------------------------------------------------------
 
-def parse_group(node, relevant_tags):
+def parse_group(node):
     group = OrderedDict()
     for element in node:
-        # the if/else clause is just for 'peripheral' nodes
-        # todo: move to separate function?
+        # this is only relevant for peripheral nodes
         if element.get("derivedFrom") is None:
-            group[element.find(relevant_tags[0]).text] = parse_individual(element, relevant_tags[1:])
-        else:
-            # this is an instance that dervies
-            if INSTANCES_KEY not in group[element.find(GROUP_KEY).text]:
-                group[element.find(GROUP_KEY).text][INSTANCES_KEY] = OrderedDict()
-                instance = OrderedDict()
-                for kv in element:
-                    instance[kv.tag] = kv.text
-                    group[element.find(GROUP_KEY).text][INSTANCES_KEY].update({element.find("name").text : instance})
+            key = element.find("name")
+            if key is None:
+                key = element.tag
             else:
-                # add instance
-                instance = OrderedDict()
-                for kv in element:
-                    instance[kv.tag] = kv.text
-                group[element.find(GROUP_KEY).text][INSTANCES_KEY].update({element.find("name").text : instance})
+                key = normalize(key.text)
+            group[key] = parse_individual(element)
+            if element.tag == "peripheral":
+                group[key]["instances"] = OrderedDict()
+                group[key]["instances"].update({element.find("name").text : parse_individual(element)})
+        else:
+            parent = normalize(element.get("derivedFrom"))
+            group[parent]["instances"].update({element.find("name").text : parse_individual(element)})
+
     return group
 
 # ------------------------------------------------------------------------------
@@ -56,6 +68,7 @@ def run(file):
     peripherals_node = device_node.find("peripherals")
     device = OrderedDict()
 
-    peripherals = parse_group(peripherals_node, ["groupName", "registers", "name", "fields", "name"])
+    peripherals = parse_group(peripherals_node)
     device[device_node.find("name").text] = peripherals
+    #print device
     return device
