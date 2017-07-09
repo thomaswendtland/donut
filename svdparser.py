@@ -13,13 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# ------------------------------------------------------------------------------
+
+# This file is used by 'makecpp_header.py' to create an 'OrderedDict' from a
+# vendor-supplied SVD file for a specific MCU. The XML structure is, for practical
+# reasons, not represented to a 100%. (TODO: should it be?)
+
+# ------------------------------------------------------------------------------
+
 #!/usr/bin/python
 
 import xml.etree.ElementTree as et
 from collections import OrderedDict
 import sys
-
-INSTANCES_KEY = "otherInstances"
 
 # strip digits at the end of a name
 # ------------------------------------------------------------------------------

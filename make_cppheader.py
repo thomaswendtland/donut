@@ -13,14 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# ------------------------------------------------------------------------------
+
+ # This file takes the 'OrderedDict' svdparser.py created and writes out C++
+ # header files according a certain layout. Parsed dictionariers can of course
+ # be used as one chooses to.
+
+# ------------------------------------------------------------------------------
+
 import svdparser
 import sys
 
 # ------------------------------------------------------------------------------
-
-SVD_FILE_NAME = "svds/ATSAM3X8E.svd"
-
-peripheral_to_write = "UART"
 
 NAMESPACE = "donut"
 
