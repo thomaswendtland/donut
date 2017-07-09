@@ -1,11 +1,12 @@
 
 import svdparser
+import sys
 
 # ------------------------------------------------------------------------------
 
-SVD_FILE_NAME = "svds/test.svd"
+SVD_FILE_NAME = "svds/ATSAM3X8E.svd"
 
-peripheral_to_write = "CRC"
+peripheral_to_write = "UART"
 
 NAMESPACE = "donut"
 
@@ -70,28 +71,36 @@ def write_peripheral(peripheral, header_file):
 def write_instance(instance, header_file):
     interrupt = "0xFF"
     if "interrupt" in instance:
-        print instance["interrupt"]
+        interrupt = instance["interrupt"]["value"]
     header_file.write("\tusing " + instance["name"] + " = " + svdparser.normalize(instance["name"]) + "Controller<" + instance["baseAddress"] + ", " + interrupt + ">;\n")
 
 # ------------------------------------------------------------------------------
 
 def main():
-    device_as_dict = svdparser.run(SVD_FILE_NAME)
+    if len(sys.argv) != 3:
+        print "Usage: makecpp_header.py SVDFILE PERIPHERAL"
+        exit(-1)
+
+    svd_filename = sys.argv[1]
+    peripheral_name = sys.argv[2]
+    device_as_dict = svdparser.run(svd_filename)
+    if device_as_dict is None:
+        exit(-1)
     device_name = device_as_dict.items()[0][0].lower()
 
     print device_name
 
     peripherals = device_as_dict.items()[0][1]
-    if peripheral_to_write.title() not in peripherals:
+    if peripheral_name.title() not in peripherals:
         print "Error: no such peripheral in the SVD provided"
         exit(-1)
 
     header_file = open("header/" + device_name + "_" + peripheral_to_write.lower() + ".hpp", "w")
     header_file.write(FILE_HEADER + device_name + " {\n")
 
-    write_peripheral(peripherals[peripheral_to_write.title()], header_file)
+    write_peripheral(peripherals[peripheral_name.title()], header_file)
     header_file.write("\n")
-    for instance in peripherals[peripheral_to_write.title()]["instances"].items():
+    for instance in peripherals[peripheral_name.title()]["instances"].items():
         write_instance(instance[1], header_file)
 
     header_file.write("\n} // end of namespace " + device_name)

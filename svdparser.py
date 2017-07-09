@@ -9,6 +9,8 @@ INSTANCES_KEY = "otherInstances"
 # strip digits at the end of a name
 # ------------------------------------------------------------------------------
 def normalize(name):
+    if name[0].isdigit():
+        return name.title() # return if all digits
     while name[len(name)-1].isdigit() == True:
         name = name[:-1]
     return name.title()
@@ -27,6 +29,9 @@ def parse_individual(node):
     if node is None:
         return OrderedDict()
     individual = OrderedDict()
+    # no child nodes for some reason
+    if len(node.getchildren()) == 0:
+        return node.text
     for element in node:
         if len(list(element.iter())) == 1:
             individual[element.tag] = element.text
@@ -42,11 +47,12 @@ def parse_group(node):
     for element in node:
         # this is only relevant for peripheral nodes
         if element.get("derivedFrom") is None:
-            key = element.find("name")
-            if key is None:
+            keytag = element.find("name")
+            key = ""
+            if keytag is None:
                 key = element.tag
             else:
-                key = normalize(key.text)
+                key = normalize(keytag.text)
             group[key] = parse_individual(element)
             if element.tag == "peripheral":
                 group[key]["instances"] = OrderedDict()
