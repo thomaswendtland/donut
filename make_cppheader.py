@@ -1,4 +1,18 @@
 
+# Copyright 2017 Thomas Wendtland
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import svdparser
 import sys
 
@@ -88,8 +102,6 @@ def main():
         exit(-1)
     device_name = device_as_dict.items()[0][0].lower()
 
-    print device_name
-
     peripherals = device_as_dict.items()[0][1]
     if peripheral_name.title() not in peripherals:
         print "Error: no such peripheral in the SVD provided"
@@ -106,6 +118,7 @@ def main():
     header_file.write("\n} // end of namespace " + device_name)
     header_file.close()
 
+    print "File successfully written to " + header_file.name
 
 # ------------------------------------------------------------------------------
 
