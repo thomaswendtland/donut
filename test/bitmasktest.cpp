@@ -13,10 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//#include "stm32f072x_crc.hpp"
 #include "Bitfield.hpp"
 #include <iostream>
 #include <cassert>
+
+/*
+
+    To be compiled for the host system to check if the bitmasks computed are
+    matching the expected results.
+
+*/
 
 using namespace donut;
 
@@ -26,19 +32,17 @@ struct TestRegister {
 };
 
 namespace {
-    constexpr auto ExpectedMask = 0xF0; // 4 bit maks shifted to the left by 4
-    constexpr std::uint32_t TestValues[6] = { 4, 4, 0xF0, 18, 3, 0x1C0000};
+    // order of values here: offset, width, expected mask
+    constexpr std::uint32_t TestValues[] = { 4, 4, 0xF0, 18, 3, 0x1C0000, 7, 5, 0xF80, 12, 9, 0x1FF000};
 }
 
-// for now simply including a header to see if the syntax is correct
 int main(int argc, char** argv){
 
     std::uint32_t mask = 0;
-    for (auto i = 0;i<sizeof(TestValues);i+=3){
-        mask = TestRegister::TestBitfield::mask(TestValues[i], TestValues[i+1]);
+    for (auto i = 0;i<sizeof(TestValues)/sizeof(uint32_t);i+=3){
+        mask = TestRegister::TestBitfield::mask();
         printf("mask: 0x%x - expected: 0x%x\n", mask, TestValues[i+2]);
         assert(mask == TestValues[i+2]);
     }
-    printf("0x%x\n", mask);
     return 0;
 }

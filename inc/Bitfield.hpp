@@ -2,7 +2,7 @@
 // Copyright 2017 Thomas Wendtland
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// you may not use this file except in compliance with \the License.
 // You may obtain a copy of the License at
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
@@ -17,6 +17,8 @@
 
 #include <cstdint>
 #include <limits>
+#include <type_traits>
+#include <iostream>
 
 namespace donut {
 
@@ -31,6 +33,7 @@ namespace donut {
     struct Bitfield {
         static_assert(!std::is_same<DataType, void>::value, "DataType must not be 'void'");
         static_assert((Offset+Width) < std::numeric_limits<typename Register::WidthType>::digits, "Invalid offset/width for Bitfield.");
+        static_assert(Width < (uint32_t)std::numeric_limits<DataType>::digits, "DataType too small for width.");
 
         static constexpr DataType read();
         static constexpr DataType read(const std::uint32_t offset);
@@ -38,7 +41,7 @@ namespace donut {
         static constexpr void write(const DataType value, const std::uint32_t offset);
 
         //private:
-        static constexpr auto mask(const std::uint32_t offset, const std::uint32_t width);
+        static constexpr typename Register::WidthType mask();
 
     };
 }
@@ -46,7 +49,16 @@ namespace donut {
 // -----------------------------------------------------------------------------
 
 template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, donut::AccessType Access>
-constexpr auto donut::Bitfield<Register, DataType, Offset, Width, Access>::mask(const std::uint32_t offset, const std::uint32_t width){
-    auto mask  = 0x000000000 | ((1<<width)-1);
-    return mask<<offset;
+constexpr DataType donut::Bitfield<Register, DataType, Offset, Width, Access>::read(){
+    using RegType = typename Register::WidthType;
+    volatile RegType& reg_value = *(reinterpret_cast<RegType*>(Register::Address));
+    return ((reg_value & mask())>>Offset);
+}
+
+// -----------------------------------------------------------------------------
+
+template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, donut::AccessType Access>
+constexpr typename Register::WidthType donut::Bitfield<Register, DataType, Offset, Width, Access>::mask(){
+    auto mask = 0x000000000 | ((1<<Width)-1);
+    return mask<<Offset;
 }
