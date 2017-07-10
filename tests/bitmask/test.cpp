@@ -39,7 +39,7 @@ namespace {
 int main(int argc, char** argv){
 
     std::uint32_t mask = 0;
-    for (auto i = 0;i<sizeof(TestValues)/sizeof(uint32_t);i+=3){
+    for (std::uint32_t i = 0;i<sizeof(TestValues)/sizeof(uint32_t);i+=3){
         mask = TestRegister::TestBitfield::mask();
         printf("mask: 0x%x - expected: 0x%x\n", mask, TestValues[i+2]);
         assert(mask == TestValues[i+2]);
