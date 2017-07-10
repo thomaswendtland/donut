@@ -19,14 +19,14 @@
 
 /*
 
-    To be compiled for and rund on the host system to check if the reads are
+    To be compiled for and run on the host system to check if reads are
     returning the correct result.
 
 */
 
 using namespace donut;
 
-static std::uint32_t TestArea = {0};
+static std::uint32_t TestArea[2] = {0};
 
 struct TestRegister {
     using WidthType = std::uint32_t;
@@ -39,12 +39,12 @@ uint64_t TestRegister::Address = (std::uint64_t)&TestArea;
 
 namespace {
     // order of values here: value in memory, value exptected
-    constexpr std::uint32_t TestValues[] = {0x30, 0x3, 0x14000, 0x14};
+    constexpr std::uint32_t TestValues[] = {0x30, 0x3, 0x14000, 0x14, };
 }
 
 int main(int argc, char** argv){
 
-    std::uint64_t& test_value =  *((std::uint64_t*)TestRegister::Address);
+    std::uint32_t& test_value =  *((std::uint32_t*)TestRegister::Address);
 
     test_value  = TestValues[0];
     auto read_value = TestRegister::TestBitfield::read();
@@ -55,6 +55,15 @@ int main(int argc, char** argv){
     read_value = TestRegister::TestBitfield2::read();
     printf("Value read: %x - expected value: %x\n", read_value, TestValues[3]);
     assert(read_value == TestValues[3]);
+
+    // test read with offset
+    test_value = 0;
+    *((std::uint32_t*)TestRegister::Address+1) = TestValues[2];
+
+    read_value = TestRegister::TestBitfield2::read(1);
+    printf("Value read: %x - expected value: %x\n", read_value, TestValues[3]);
+    assert(read_value == TestValues[3]);
+
 
     return 0;
 }

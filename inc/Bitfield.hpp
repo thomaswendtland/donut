@@ -20,6 +20,12 @@
 #include <type_traits>
 #include <iostream>
 
+/*
+
+    TODO: - add offset check for register offset ()
+
+*/
+
 namespace donut {
 
     enum class AccessType {
@@ -50,8 +56,20 @@ namespace donut {
 
 template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, donut::AccessType Access>
 constexpr DataType donut::Bitfield<Register, DataType, Offset, Width, Access>::read(){
+    static_assert(Access != AccessType::Write, "Read not allowed on write-only fields.");
     using RegType = typename Register::WidthType;
     volatile RegType& reg_value = *(reinterpret_cast<RegType*>(Register::Address));
+    return ((reg_value & mask())>>Offset);
+}
+
+// -----------------------------------------------------------------------------
+
+template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, donut::AccessType Access>
+constexpr DataType donut::Bitfield<Register, DataType, Offset, Width, Access>::read(const std::uint32_t reg_offset){
+    static_assert(Access != AccessType::Write, "Read not allowed on write-only fields.");
+    using RegType = typename Register::WidthType;
+    constexpr std::size_t reg_size = sizeof(RegType);
+    volatile RegType& reg_value = *(reinterpret_cast<RegType*>(Register::Address + (reg_offset*reg_size)));
     return ((reg_value & mask())>>Offset);
 }
 
