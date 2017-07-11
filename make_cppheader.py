@@ -36,9 +36,9 @@ REGISTER_WIDTH_TYPE = "std::uint32_t"
 
 def cpp_access_type_for_xmlvalue(xmlvalue):
     if xmlvalue == "read-only":
-        return "AccessType::Read"
+        return "AccessType::ReadOnly"
     elif xmlvalue == "write-only":
-        return "AccessType::Write"
+        return "AccessType::WriteOnly"
     elif xmlvalue == "read-write":
         return "AccessType::ReadWrite"
 
@@ -111,7 +111,7 @@ def main():
         print "Error: no such peripheral in the SVD provided"
         exit(-1)
 
-    header_file = open("header/" + device_name + "_" + peripheral_to_write.lower() + ".hpp", "w")
+    header_file = open("header/" + device_name + "_" + peripheral_name.lower() + ".hpp", "w")
     header_file.write(FILE_HEADER + device_name + " {\n")
 
     write_peripheral(peripherals[peripheral_name.title()], header_file)

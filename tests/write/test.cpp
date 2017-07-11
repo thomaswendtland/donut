@@ -32,6 +32,7 @@ struct TestRegister {
     using WidthType = std::uint32_t;
     static std::uint64_t Address; // not as in real life, test workaround
     using TestBitfield = donut::Bitfield<TestRegister, std::uint16_t, 12, 9, AccessType::ReadWrite>;
+    using WriteOnlyBitfield = donut::Bitfield<TestRegister, std::uint16_t, 12, 9, AccessType::WriteOnly>;
 };
 
 uint64_t TestRegister::Address = (std::uint64_t)&TestMemoryLocation;
@@ -43,12 +44,14 @@ namespace {
 
 int main(int argc, char** argv){
 
-    for(std::uint32_t i = 0;i<sizeof(TestValues)/sizeof(std::uint32_t);i++){
+    for (std::uint32_t i = 0;i<sizeof(TestValues)/sizeof(std::uint32_t);i++){
         TestRegister::TestBitfield::write(TestValues[i]);
         auto read_value = TestRegister::TestBitfield::read();
         printf("write_value: %i - read_value : %i\n", TestValues[i], read_value);
         assert(read_value == TestValues[i]);
     }
+
+    TestRegister::TestBitfield::write(TestValues[0]);
 
     return 0;
 }
