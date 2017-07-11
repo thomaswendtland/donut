@@ -26,7 +26,7 @@
 
 using namespace donut;
 
-static std::uint32_t TestArea[2] = {0};
+static std::uint32_t TestMemoryLocation[2] = {0};
 
 struct TestRegister {
     using WidthType = std::uint32_t;
@@ -35,7 +35,7 @@ struct TestRegister {
     using TestBitfield2 = donut::Bitfield<TestRegister, std::uint16_t, 12, 9, AccessType::Read>;
 };
 
-uint64_t TestRegister::Address = (std::uint64_t)&TestArea;
+uint64_t TestRegister::Address = (std::uint64_t)&TestMemoryLocation;
 
 namespace {
     // order of values here: value in memory, value exptected
