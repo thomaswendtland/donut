@@ -22,6 +22,7 @@
 /*
 
     TODO: - add offset check for register offset ()
+          - atomimicity policies (bitbanding etc.)
 
 */
 
@@ -42,9 +43,9 @@ namespace donut {
         static_assert(Width < (uint32_t)std::numeric_limits<DataType>::digits, "DataType too small for width.");
 
         static constexpr volatile DataType read();
-        static constexpr DataType read(const std::uint32_t offset);
+        static constexpr DataType read(const std::uint32_t reg_number);
         static constexpr void write(const DataType value);
-        static constexpr void write(const DataType value, const std::uint32_t offset);
+        static constexpr void write(const DataType value, const std::uint32_t reg_number);
 
         //private:
         static constexpr RegType mask();
@@ -52,6 +53,7 @@ namespace donut {
     };
 }
 
+// read
 // -----------------------------------------------------------------------------
 
 template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, donut::AccessType Access>
@@ -61,17 +63,19 @@ constexpr volatile DataType donut::Bitfield<Register, DataType, Offset, Width, A
     return ((reg_value & mask())>>Offset);
 }
 
+// read with offset
 // -----------------------------------------------------------------------------
 
 template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, donut::AccessType Access>
-constexpr DataType donut::Bitfield<Register, DataType, Offset, Width, Access>::read(const std::uint32_t reg_offset){
+constexpr DataType donut::Bitfield<Register, DataType, Offset, Width, Access>::read(const std::uint32_t reg_number){
     static_assert(Access != AccessType::WriteOnly, "Read not allowed on write-only fields.");
     using RegType = typename Register::WidthType;
     constexpr std::size_t reg_size = sizeof(RegType);
-    volatile DataType& reg_value = *(reinterpret_cast<DataType*>(Register::Address + (reg_offset*reg_size)));
+    volatile RegType& reg_value = *(reinterpret_cast<RegType*>(Register::Address + (reg_number*reg_size)));
     return ((reg_value & mask())>>Offset);
 }
 
+// write
 // -----------------------------------------------------------------------------
 
 template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, donut::AccessType Access>
@@ -79,6 +83,25 @@ constexpr void donut::Bitfield<Register, DataType, Offset, Width, Access>::write
     static_assert(Access == AccessType::WriteOnly || Access == AccessType::ReadWrite, "Write not allowed on read-only fields.");
     using RegType = typename Register::WidthType;
     volatile RegType& reg_value = *(reinterpret_cast<volatile RegType*>(Register::Address));
+    constexpr auto bitmask = mask();
+    if (Access == AccessType::ReadWrite){
+        reg_value &= ~bitmask;
+        reg_value |= (value<<Offset) & bitmask;
+    }
+    else {
+        reg_value = (value<<Offset) & bitmask;
+    }
+}
+
+// write with offset
+// -----------------------------------------------------------------------------
+
+template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, donut::AccessType Access>
+constexpr void donut::Bitfield<Register, DataType, Offset, Width, Access>::write(const DataType value, const std::uint32_t reg_number){
+    static_assert(Access == AccessType::WriteOnly || Access == AccessType::ReadWrite, "Write not allowed on read-only fields.");
+    using RegType = typename Register::WidthType;
+    constexpr std::size_t reg_size = sizeof(RegType);
+    volatile RegType& reg_value = *(reinterpret_cast<volatile RegType*>(Register::Address + (reg_number*reg_size)));
     constexpr auto bitmask = mask();
     if (Access == AccessType::ReadWrite){
         reg_value &= ~bitmask;
