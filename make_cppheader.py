@@ -33,21 +33,29 @@ FILE_HEADER = "\n#pragma once\n\n#include <cstdint>\n#include \"Bitfield.hpp\"\n
 PERIPHERAL_TEMPLATE_STRING = "\ttemplate <std::uint32_t BaseAddress, std::uint16_t Irq>\n"
 REGISTER_WIDTH_TYPE = "std::uint32_t"
 
+# strip digits at the end of a name
+# ------------------------------------------------------------------------------
+def normalize(name):
+    if name[0].isdigit():
+        return name # return if all digits
+    while name[len(name)-1].isdigit() == True:
+        name = name[:-1]
+    return name
+
+
+#  different SVDs may contain different tags for elements, use one standard
 # ------------------------------------------------------------------------------
 
-def cpp_access_type_for_xmlvalue(svdvalue):
-    if svdvalue == "read-only":
-        return "AccessType::ReadOnly"
-    elif svdvalue == "write-only":
-        return "AccessType::WriteOnly"
-    elif svdvalue == "read-write":
-        return "AccessType::ReadWrite"
-
-# ------------------------------------------------------------------------------
-
-def bitdimensions(field):
-    if "bitOffset" in field:
-        return field
+def standardize(field):
+    if "access" in field:
+        if field["access"] == "read-only":
+            field["access"] = "AccessType::ReadOnly"
+        elif field["access"] == "write-only":
+            field["access"] = "AccessType::WriteOnly"
+        elif field["access"] == "read-write":
+            field["access"] = "AccessType::ReadWrite"
+    else:
+        field["access"] = "AccessType::ReadWrite"
     if "lsb" in field:
         field["bitOffset"] = field["lsb"]
         field["bitWidth"]  = str(int(field["msb"]) - int(field["lsb"]) + 1)
@@ -68,15 +76,12 @@ def type_for_bitwidth(bitwidth):
 # ------------------------------------------------------------------------------
 
 def write_field(register, field, header_file):
-    field = bitdimensions(field)
+    field = standardize(field)
     datatype = type_for_bitwidth(int(field["bitWidth"]))
     if register["name"] == field["name"]:
         field["name"] = "Value"
 
-    access = register["access"]
-    if "access" in field:
-        access = field["access"]
-    template_params = [register["name"].title(), datatype, field["bitOffset"].title(), field["bitWidth"].title(), cpp_access_type_for_xmlvalue(access)]
+    template_params = [register["name"].title(), datatype, field["bitOffset"].title(), field["bitWidth"].title(), field["access"]]
     header_file.write("\t\t\tusing " + field["name"].title() + " = Bitfield<" + ", ".join(template_params) + ">;\n")
 
 # ------------------------------------------------------------------------------
@@ -101,7 +106,7 @@ def write_register(register, header_file):
 
 def write_peripheral(peripheral, header_file):
     header_file.write(PERIPHERAL_TEMPLATE_STRING)
-    header_file.write("\tstruct " + svdparser.normalize(peripheral["name"].title()) + "Controller" +" {\n")
+    header_file.write("\tstruct " + normalize(peripheral["name"].title()) + "Controller" +" {\n")
     for register in peripheral["registers"].items():
         write_register(register[1], header_file)
     header_file.write("\t};")
@@ -111,8 +116,8 @@ def write_peripheral(peripheral, header_file):
 def write_instance(instance, header_file):
     interrupt = "0xFF"
     if "interrupt" in instance:
-        interrupt = instance["interrupt"]["value"]
-    header_file.write("\n\tusing " + instance["name"].title() + " = " + svdparser.normalize(instance["name"].title()) + "Controller<" + instance["baseAddress"] + ", " + interrupt + ">;\n")
+        interrupt = instance["interrupt"]["Value"]
+    header_file.write("\n\tusing " + instance["name"].title() + " = " + normalize(instance["name"].title()) + "Controller<" + instance["baseAddress"] + ", " + interrupt + ">;")
 
 # ------------------------------------------------------------------------------
 
@@ -122,34 +127,37 @@ def main():
         exit(-1)
 
     svd_filename = sys.argv[1]
-    peripheral_name = sys.argv[2]
+    peripheral_name = sys.argv[2].title()
     device_as_dict = svdparser.run(svd_filename)
     if device_as_dict is None:
         exit(-1)
 
     device_name = device_as_dict.items()[0][0].lower()
-
-    # try all variations of a name
     peripherals = device_as_dict.items()[0][1]
-    if peripheral_name.title not in peripherals:
-        peripheral_name = peripheral_name.title()
-    if peripheral_name not in peripherals:
-        peripheral_name = peripheral_name.upper()
-    if peripheral_name not in peripherals:
-        peripheral_name = peripheral_name.lower()
+
     if peripheral_name not in peripherals:
         print "Error: no such peripheral in the SVD provided"
         exit(-1)
 
-    header_file = open("header/" + device_name + "_" + peripheral_name.lower() + ".hpp", "w")
+    header_file = open("header/" + device_name + "_" + normalize(peripheral_name.lower()) + ".hpp", "w")
     header_file.write(FILE_HEADER + device_name + " {\n")
 
+    peripheral = peripherals[peripheral_name]
+
+    # if the peripheral selected inherits, take the parent to write header
+    if "derivedFrom" in peripheral:
+        peripheral_name = peripheral["derivedFrom"].title()
     write_peripheral(peripherals[peripheral_name], header_file)
     header_file.write("\n")
-    for instance in peripherals[peripheral_name]["instances"].items():
-        write_instance(instance[1], header_file)
+    # write the parent as an instance
+    write_instance(peripherals[peripheral_name], header_file)
 
-    header_file.write("\n} // end of namespace " + device_name)
+    # write all peripherals that inherit as instances
+    for item in peripherals.items():
+        if "derivedFrom" in item[1] and item[1]["derivedFrom"].title() == peripheral_name:
+            write_instance(item[1], header_file)
+
+    header_file.write("\n\n} // end of namespace " + device_name)
     header_file.close()
 
     print "File successfully written to " + header_file.name
