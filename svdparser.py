@@ -31,10 +31,10 @@ import sys
 # ------------------------------------------------------------------------------
 def normalize(name):
     if name[0].isdigit():
-        return name.title() # return if all digits
+        return name # return if all digits
     while name[len(name)-1].isdigit() == True:
         name = name[:-1]
-    return name.title()
+    return name
 
 # ------------------------------------------------------------------------------
 
@@ -52,7 +52,7 @@ def parse_individual(node):
     individual = OrderedDict()
     # no child nodes for some reason
     if len(node.getchildren()) == 0:
-        return node.text
+        return node.text.title()
     for element in node:
         if len(list(element.iter())) == 1:
             individual[element.tag] = element.text

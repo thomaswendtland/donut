@@ -35,6 +35,10 @@ namespace donut {
         ReadAndClear
     };
 
+    // @note: weak symbol to overwrite possible?
+    void atomic_write();
+
+
     template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, AccessType Access>
     struct Bitfield {
         using RegType = typename Register::WidthType;
