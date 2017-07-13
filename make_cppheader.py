@@ -23,6 +23,7 @@
 
 import svdparser
 import sys
+from collections import OrderedDict
 
 # ------------------------------------------------------------------------------
 
@@ -34,13 +35,23 @@ REGISTER_WIDTH_TYPE = "std::uint32_t"
 
 # ------------------------------------------------------------------------------
 
-def cpp_access_type_for_svdvalue(svdvalue):
+def cpp_access_type_for_xmlvalue(svdvalue):
     if svdvalue == "read-only":
         return "AccessType::ReadOnly"
     elif svdvalue == "write-only":
         return "AccessType::WriteOnly"
     elif svdvalue == "read-write":
         return "AccessType::ReadWrite"
+
+# ------------------------------------------------------------------------------
+
+def bitdimensions(field):
+    if "bitOffset" in field:
+        return field
+    if "lsb" in field:
+        field["bitOffset"] = field["lsb"]
+        field["bitWidth"]  = str(int(field["msb"]) - int(field["lsb"]) + 1)
+    return field
 
 # ------------------------------------------------------------------------------
 
@@ -56,12 +67,8 @@ def type_for_bitwidth(bitwidth):
 
 # ------------------------------------------------------------------------------
 
-def write_type(values):
-
-
-# ------------------------------------------------------------------------------
-
 def write_field(register, field, header_file):
+    field = bitdimensions(field)
     datatype = type_for_bitwidth(int(field["bitWidth"]))
     if register["name"] == field["name"]:
         field["name"] = "Value"
@@ -81,6 +88,13 @@ def write_register(register, header_file):
     if "fields" in register:
         for field in register["fields"].items():
             write_field(register, field[1], header_file)
+    else: # write default field
+        field = OrderedDict()
+        field["name"] = "Value"
+        field["bitOffset"] = "0"
+        field["bitWidth"] = "32"
+        field["access"] = "read-write"
+        write_field(register, field, header_file)
     header_file.write("\t\t};\n")
 
 # ------------------------------------------------------------------------------
