@@ -34,12 +34,12 @@ REGISTER_WIDTH_TYPE = "std::uint32_t"
 
 # ------------------------------------------------------------------------------
 
-def cpp_access_type_for_xmlvalue(xmlvalue):
-    if xmlvalue == "read-only":
+def cpp_access_type_for_svdvalue(svdvalue):
+    if svdvalue == "read-only":
         return "AccessType::ReadOnly"
-    elif xmlvalue == "write-only":
+    elif svdvalue == "write-only":
         return "AccessType::WriteOnly"
-    elif xmlvalue == "read-write":
+    elif svdvalue == "read-write":
         return "AccessType::ReadWrite"
 
 # ------------------------------------------------------------------------------
@@ -50,7 +50,14 @@ def type_for_bitwidth(bitwidth):
         width_type = "std::uint16_t"
     if bitwidth <= 8:
         width_type = "std::uint8_t"
+    if bitwidth == 1:
+        width_type = "bool"
     return width_type
+
+# ------------------------------------------------------------------------------
+
+def write_type(values):
+
 
 # ------------------------------------------------------------------------------
 
@@ -105,6 +112,7 @@ def main():
     device_as_dict = svdparser.run(svd_filename)
     if device_as_dict is None:
         exit(-1)
+
     device_name = device_as_dict.items()[0][0].lower()
 
     # try all variations of a name
