@@ -141,6 +141,6 @@ constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::clear()
 
 template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, rye::AccessType Access>
 constexpr typename Register::WidthType rye::Bitfield<Register, DataType, Offset, Width, Access>::mask(){
-    RegType mask = 0x000000000 | ((1<<Width)-1);
+    std::uint64_t mask = std::uint64_t{0x000000000} | ((std::uint64_t{1}<<Width)-1); // std::uint64_t to surpress warning when shifting 32 bits
     return mask<<Offset;
 }
