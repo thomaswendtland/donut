@@ -16,4 +16,4 @@ $(EXECUTABLE): $(EXECUTABLE).cpp
 	$(CC) $(CFLAGS) $< -o $(EXECUTABLE)
 
 clean:
-	rm $(EXECUTABLE)
+	rm -f $(EXECUTABLE)

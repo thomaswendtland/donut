@@ -28,21 +28,39 @@ using namespace rye;
 
 struct TestRegister {
     using WidthType = std::uint32_t;
-    using TestBitfield = rye::Bitfield<TestRegister, uint8_t, 4, 4, AccessType::Read>;
+    using TestBitfield0 = rye::Bitfield<TestRegister, uint8_t, 4, 4, AccessType::ReadOnly>;
+    using TestBitfield1 = rye::Bitfield<TestRegister, uint8_t, 18, 3, AccessType::ReadOnly>;
+    using TestBitfield2 = rye::Bitfield<TestRegister, uint8_t, 7, 5, AccessType::ReadOnly>;
+    using TestBitfield3 = rye::Bitfield<TestRegister, uint8_t, 12, 9, AccessType::ReadOnly>;
+    using TestBitfield4 = rye::Bitfield<TestRegister, uint8_t, 0, 32, AccessType::ReadOnly>;
 };
 
 namespace {
     // order of values here: offset, width, expected mask
-    constexpr std::uint32_t TestValues[] = { 4, 4, 0xF0, 18, 3, 0x1C0000, 7, 5, 0xF80, 12, 9, 0x1FF000};
+    constexpr std::uint32_t TestValues[] = { 0xF0, 0x1C0000, 0xF80, 0x1FF000, 0xFFFFFFFF};
 }
 
 int main(int argc, char** argv){
 
     std::uint32_t mask = 0;
-    for (std::uint32_t i = 0;i<sizeof(TestValues)/sizeof(uint32_t);i+=3){
-        mask = TestRegister::TestBitfield::mask();
-        printf("mask: 0x%x - expected: 0x%x\n", mask, TestValues[i+2]);
-        assert(mask == TestValues[i+2]);
-    }
+    mask = TestRegister::TestBitfield0::mask();
+    printf("mask: 0x%x - expected: 0x%x\n", mask, TestValues[0]);
+    assert(mask == TestValues[0]);
+
+    mask = TestRegister::TestBitfield1::mask();
+    printf("mask: 0x%x - expected: 0x%x\n", mask, TestValues[1]);
+    assert(mask == TestValues[1]);
+
+    mask = TestRegister::TestBitfield2::mask();
+    printf("mask: 0x%x - expected: 0x%x\n", mask, TestValues[2]);
+    assert(mask == TestValues[2]);
+
+    mask = TestRegister::TestBitfield3::mask();
+    printf("mask: 0x%x - expected: 0x%x\n", mask, TestValues[3]);
+    assert(mask == TestValues[3]);
+
+    mask = TestRegister::TestBitfield4::mask();
+    printf("mask: 0x%x - expected: 0x%x\n", mask, TestValues[4]);
+    assert(mask == TestValues[4]);
     return 0;
 }

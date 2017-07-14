@@ -42,8 +42,8 @@ namespace rye {
     template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, AccessType Access>
     struct Bitfield {
         using RegType = typename Register::WidthType;
-        static_assert(!std::is_same<DataType, void>::value, "DataType must not be 'void'");
-        static_assert((Offset+Width) < std::numeric_limits<typename Register::WidthType>::digits, "Invalid offset/width for Bitfield.");
+        static_assert(!std::is_same<DataType, void>::value, "Bitfield error: DataType must not be 'void'");
+        static_assert((Offset+Width) <= std::numeric_limits<typename Register::WidthType>::digits, "Bitfield error: Invalid offset/width for Bitfield.");
 
         static constexpr volatile DataType read();
         static constexpr DataType read(const std::uint32_t reg_number);
