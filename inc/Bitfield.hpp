@@ -44,16 +44,17 @@ namespace rye {
         using RegType = typename Register::WidthType;
         static_assert(!std::is_same<DataType, void>::value, "DataType must not be 'void'");
         static_assert((Offset+Width) < std::numeric_limits<typename Register::WidthType>::digits, "Invalid offset/width for Bitfield.");
-        static_assert(Width < (uint32_t)std::numeric_limits<DataType>::digits, "DataType too small for width.");
 
         static constexpr volatile DataType read();
         static constexpr DataType read(const std::uint32_t reg_number);
+
         static constexpr void write(const DataType value);
         static constexpr void write(const DataType value, const std::uint32_t reg_number);
+        static constexpr void set();
+        static constexpr void clear();
 
         //private:
         static constexpr RegType mask();
-
     };
 }
 
@@ -86,7 +87,8 @@ template<typename Register, typename DataType, std::uint32_t Offset, std::uint32
 constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write(const DataType value){
     static_assert(Access == AccessType::WriteOnly || Access == AccessType::ReadWrite, "Write not allowed on read-only fields.");
     using RegType = typename Register::WidthType;
-    volatile RegType& reg_value = *(reinterpret_cast<volatile RegType*>(Register::Address));
+    volatile RegType* reg = (reinterpret_cast<volatile RegType*>(Register::Address));
+    auto reg_value = *reg;
     constexpr auto bitmask = mask();
     if (Access == AccessType::ReadWrite){
         reg_value &= ~bitmask;
@@ -95,6 +97,7 @@ constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write(c
     else {
         reg_value = (value<<Offset) & bitmask;
     }
+    *reg = reg_value;
 }
 
 // write with offset
@@ -105,7 +108,8 @@ constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write(c
     static_assert(Access == AccessType::WriteOnly || Access == AccessType::ReadWrite, "Write not allowed on read-only fields.");
     using RegType = typename Register::WidthType;
     constexpr std::size_t reg_size = sizeof(RegType);
-    volatile RegType& reg_value = *(reinterpret_cast<volatile RegType*>(Register::Address + (reg_number*reg_size)));
+    volatile RegType& reg = *(reinterpret_cast<volatile RegType*>(Register::Address + (reg_number*reg_size)));
+    auto reg_value = *reg;
     constexpr auto bitmask = mask();
     if (Access == AccessType::ReadWrite){
         reg_value &= ~bitmask;
@@ -114,6 +118,23 @@ constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write(c
     else {
         reg_value = (value<<Offset) & bitmask;
     }
+    *reg = value;
+}
+
+// -----------------------------------------------------------------------------
+
+template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, rye::AccessType Access>
+constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::set(){
+    static_assert(Width == 1, "Set only allowed on fields of size 1");
+    write(true);
+}
+
+// -----------------------------------------------------------------------------
+
+template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, rye::AccessType Access>
+constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::clear(){
+    static_assert(Width == 1, "Clear only allowed on fields of size 1");
+    write(false);
 }
 
 // -----------------------------------------------------------------------------

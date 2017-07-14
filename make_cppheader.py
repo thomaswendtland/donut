@@ -81,7 +81,7 @@ def write_field(register, field, header_file):
     if register["name"] == field["name"]:
         field["name"] = "Value"
 
-    template_params = [register["name"].title(), datatype, field["bitOffset"].title(), field["bitWidth"].title(), field["access"]]
+    template_params = [register["name"].title(), datatype, field["bitOffset"], field["bitWidth"], field["access"]]
     header_file.write("\t\t\tusing " + field["name"].title() + " = Bitfield<" + ", ".join(template_params) + ">;\n")
 
 # ------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ def write_field(register, field, header_file):
 def write_register(register, header_file):
     header_file.write("\t\tstruct " + register["name"].title() + " {\n")
     header_file.write("\t\t\tusing WidthType = " + REGISTER_WIDTH_TYPE + ";\n")
-    header_file.write("\t\t\tstatic constexpr WidthType Address = BaseAddress + " + register["addressOffset"] + ";\n")
+    header_file.write("\t\t\tstatic constexpr WidthType Address = BaseAddress + " + register["addressOffset"].lower() + ";\n")
     if "fields" in register:
         for field in register["fields"].items():
             write_field(register, field[1], header_file)
