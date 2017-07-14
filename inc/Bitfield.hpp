@@ -26,7 +26,7 @@
 
 */
 
-namespace donut {
+namespace rye {
 
     enum class AccessType {
         ReadOnly,
@@ -60,8 +60,8 @@ namespace donut {
 // read
 // -----------------------------------------------------------------------------
 
-template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, donut::AccessType Access>
-constexpr volatile DataType donut::Bitfield<Register, DataType, Offset, Width, Access>::read(){
+template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, rye::AccessType Access>
+constexpr volatile DataType rye::Bitfield<Register, DataType, Offset, Width, Access>::read(){
     static_assert(Access != AccessType::WriteOnly, "Read not allowed on write-only fields.");
     volatile RegType& reg_value = *(reinterpret_cast<volatile RegType*>(Register::Address));
     return ((reg_value & mask())>>Offset);
@@ -70,8 +70,8 @@ constexpr volatile DataType donut::Bitfield<Register, DataType, Offset, Width, A
 // read with offset
 // -----------------------------------------------------------------------------
 
-template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, donut::AccessType Access>
-constexpr DataType donut::Bitfield<Register, DataType, Offset, Width, Access>::read(const std::uint32_t reg_number){
+template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, rye::AccessType Access>
+constexpr DataType rye::Bitfield<Register, DataType, Offset, Width, Access>::read(const std::uint32_t reg_number){
     static_assert(Access != AccessType::WriteOnly, "Read not allowed on write-only fields.");
     using RegType = typename Register::WidthType;
     constexpr std::size_t reg_size = sizeof(RegType);
@@ -82,8 +82,8 @@ constexpr DataType donut::Bitfield<Register, DataType, Offset, Width, Access>::r
 // write
 // -----------------------------------------------------------------------------
 
-template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, donut::AccessType Access>
-constexpr void donut::Bitfield<Register, DataType, Offset, Width, Access>::write(const DataType value){
+template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, rye::AccessType Access>
+constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write(const DataType value){
     static_assert(Access == AccessType::WriteOnly || Access == AccessType::ReadWrite, "Write not allowed on read-only fields.");
     using RegType = typename Register::WidthType;
     volatile RegType& reg_value = *(reinterpret_cast<volatile RegType*>(Register::Address));
@@ -100,8 +100,8 @@ constexpr void donut::Bitfield<Register, DataType, Offset, Width, Access>::write
 // write with offset
 // -----------------------------------------------------------------------------
 
-template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, donut::AccessType Access>
-constexpr void donut::Bitfield<Register, DataType, Offset, Width, Access>::write(const DataType value, const std::uint32_t reg_number){
+template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, rye::AccessType Access>
+constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write(const DataType value, const std::uint32_t reg_number){
     static_assert(Access == AccessType::WriteOnly || Access == AccessType::ReadWrite, "Write not allowed on read-only fields.");
     using RegType = typename Register::WidthType;
     constexpr std::size_t reg_size = sizeof(RegType);
@@ -118,8 +118,8 @@ constexpr void donut::Bitfield<Register, DataType, Offset, Width, Access>::write
 
 // -----------------------------------------------------------------------------
 
-template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, donut::AccessType Access>
-constexpr typename Register::WidthType donut::Bitfield<Register, DataType, Offset, Width, Access>::mask(){
+template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, rye::AccessType Access>
+constexpr typename Register::WidthType rye::Bitfield<Register, DataType, Offset, Width, Access>::mask(){
     RegType mask = 0x000000000 | ((1<<Width)-1);
     return mask<<Offset;
 }

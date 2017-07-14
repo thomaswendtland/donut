@@ -1,5 +1,5 @@
 
-PROJECT = donut
+PROJECT = rye
 BUILDDIR = ./build
 
 SRCDIR = ./src

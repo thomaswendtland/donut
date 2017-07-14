@@ -24,11 +24,11 @@
 
 */
 
-using namespace donut;
+using namespace rye;
 
 struct TestRegister {
     using WidthType = std::uint32_t;
-    using TestBitfield = donut::Bitfield<TestRegister, uint8_t, 4, 4, AccessType::Read>;
+    using TestBitfield = rye::Bitfield<TestRegister, uint8_t, 4, 4, AccessType::Read>;
 };
 
 namespace {

@@ -27,7 +27,7 @@ from collections import OrderedDict
 
 # ------------------------------------------------------------------------------
 
-NAMESPACE = "donut"
+NAMESPACE = "rye"
 
 FILE_HEADER = "\n#pragma once\n\n#include <cstdint>\n#include \"Bitfield.hpp\"\n\nusing namespace " + NAMESPACE + ";\n\nnamespace "
 PERIPHERAL_TEMPLATE_STRING = "\ttemplate <std::uint32_t BaseAddress, std::uint16_t Irq>\n"

@@ -24,15 +24,15 @@
 
 */
 
-using namespace donut;
+using namespace rye;
 
 static std::uint32_t TestMemoryLocation[2] = {0};
 
 struct TestRegister {
     using WidthType = std::uint32_t;
     static std::uint64_t Address; // not as in real life, test workaround
-    using TestBitfield = donut::Bitfield<TestRegister, std::uint8_t, 4, 4, AccessType::ReadOnly>;
-    using TestBitfield2 = donut::Bitfield<TestRegister, std::uint16_t, 12, 9, AccessType::ReadOnly>;
+    using TestBitfield = rye::Bitfield<TestRegister, std::uint8_t, 4, 4, AccessType::ReadOnly>;
+    using TestBitfield2 = rye::Bitfield<TestRegister, std::uint16_t, 12, 9, AccessType::ReadOnly>;
 };
 
 uint64_t TestRegister::Address = (std::uint64_t)&TestMemoryLocation;
