@@ -78,20 +78,32 @@ def type_for_bitwidth(bitwidth):
 
 # ------------------------------------------------------------------------------
 
-def write_field(register, field, header_file):
-    field = standardize(field)
-    datatype = ""
-    # add a global type this field
-    if "enumeratedValues" in field and len(field["enumeratedValues"]) > 1:
-        global types
-        datatype = field["name"].title() + "Type"
+def check_and_add_fieldtype(field):
+    global types
+    datatype = field["name"].title() + "Type"
+    exists = False
+    for t in types:
+        # type of that name already exists
+        if datatype in t:
+            exists = True
+    if exists is False:
         typestring = "\tenum class " + datatype + "{\n"
-        for value in  field["enumeratedValues"]:
+        for value in field["enumeratedValues"]:
             # todo: remove leading digits
             typestring += "\t\t" + value + ",\n"
         typestring = typestring[:-2] + "\n" # delete comma for last item
         typestring += "\t};\n"
         types.append(typestring)
+    return datatype
+
+# ------------------------------------------------------------------------------
+
+def write_field(register, field, header_file):
+    field = standardize(field)
+    datatype = ""
+    # add a global type this field
+    if "enumeratedValues" in field and len(field["enumeratedValues"]) > 1:
+        datatype = check_and_add_fieldtype(field)
     else:
         datatype = type_for_bitwidth(int(field["bitWidth"]))
     if register["name"] == field["name"]:
@@ -123,7 +135,7 @@ def write_register(register, header_file):
 
 def write_peripheral(peripheral, header_file):
     header_file.write(PERIPHERAL_TEMPLATE_STRING)
-    header_file.write("\tstruct " + strip_trailing_digits(peripheral["name"].title()) + "Controller" +" {\n")
+    header_file.write("\tstruct Controller {\n")
     for register in peripheral["registers"].items():
         write_register(register[1], header_file)
     header_file.write("\t};")
@@ -134,11 +146,12 @@ def write_instance(instance, header_file):
     interrupt = "0xFF"
     if "interrupt" in instance:
         interrupt = instance["interrupt"]["Value"]
-    header_file.write("\n\tusing " + instance["name"].title() + " = " + strip_trailing_digits(instance["name"].title()) + "Controller<" + instance["baseAddress"] + ", " + interrupt + ">;")
+    header_file.write("\n\tusing " + instance["name"].title() + " = " + strip_trailing_digits(instance["name"].title()) + "::Controller<" + instance["baseAddress"] + ", " + interrupt + ">;")
 
 # ------------------------------------------------------------------------------
 
 def main():
+    generate_types = False
     if len(sys.argv) != 3:
         print "Usage: makecpp_header.py SVDFILE PERIPHERAL"
         exit(-1)
@@ -157,7 +170,7 @@ def main():
         exit(-1)
 
     header_file = open("header/" + device_name + "_" + strip_trailing_digits(peripheral_name.lower()) + ".hpp", "w")
-    header_file.write(FILE_HEADER + device_name + " {\n\n   // Types\n\n")
+    header_file.write(FILE_HEADER + device_name + " {\n\nnamespace " + strip_trailing_digits(peripheral_name) + " {\n\n   // Types\n\n")
 
     peripheral = peripherals[peripheral_name]
 
@@ -165,7 +178,7 @@ def main():
     if "derivedFrom" in peripheral:
         peripheral_name = peripheral["derivedFrom"].title()
     write_peripheral(peripherals[peripheral_name], header_file)
-    header_file.write("\n")
+    header_file.write("\n\n}")
     # write the parent as an instance
     write_instance(peripherals[peripheral_name], header_file)
 
