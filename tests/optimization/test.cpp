@@ -22,12 +22,12 @@
 
 */
 
-using namespace donut;
+using namespace rye;
 
 struct TestRegister {
     using WidthType = std::uint32_t;
     static constexpr std::uint64_t Address = 0x20003000;
-    using TestBitfield = donut::Bitfield<TestRegister, std::uint16_t, 12, 9, AccessType::ReadWrite>;
+    using TestBitfield = rye::Bitfield<TestRegister, std::uint16_t, 12, 9, Access::ReadWrite>;
 };
 
 int main(int argc, char** argv){

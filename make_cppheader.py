@@ -52,13 +52,13 @@ def strip_trailing_digits(name):
 def standardize(field):
     if "access" in field:
         if field["access"] == "read-only":
-            field["access"] = "AccessType::ReadOnly"
+            field["access"] = "Access::ReadOnly"
         elif field["access"] == "write-only":
-            field["access"] = "AccessType::WriteOnly"
+            field["access"] = "Access::WriteOnly"
         elif field["access"] == "read-write":
-            field["access"] = "AccessType::ReadWrite"
+            field["access"] = "Access::ReadWrite"
     else:
-        field["access"] = "AccessType::ReadWrite"
+        field["access"] = "Access::ReadWrite"
     if "lsb" in field:
         field["bitOffset"] = field["lsb"]
         field["bitWidth"]  = str(int(field["msb"]) - int(field["lsb"]) + 1)
@@ -88,9 +88,13 @@ def check_and_add_fieldtype(field):
             exists = True
     if exists is False:
         typestring = "\tenum class " + datatype + "{\n"
-        for value in field["enumeratedValues"]:
+        for key in field["enumeratedValues"]:
             # todo: remove leading digits
-            typestring += "\t\t" + value + ",\n"
+            # not all fields have correct values, so check if string only
+            elem = field["enumeratedValues"][key]
+            if isinstance(elem, basestring) == False:
+                print elem["value"]
+                typestring += "\t\t" + elem["name"] + " = " + elem["value"] + ",\n"
         typestring = typestring[:-2] + "\n" # delete comma for last item
         typestring += "\t};\n"
         types.append(typestring)
@@ -102,7 +106,7 @@ def write_field(register, field, header_file):
     field = standardize(field)
     datatype = ""
     # add a global type this field
-    if "enumeratedValues" in field and len(field["enumeratedValues"]) > 1:
+    if "enumeratedValues" in field and len(field["enumeratedValues"]) > 2:
         datatype = check_and_add_fieldtype(field)
     else:
         datatype = type_for_bitwidth(int(field["bitWidth"]))

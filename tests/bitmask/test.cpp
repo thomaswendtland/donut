@@ -28,11 +28,11 @@ using namespace rye;
 
 struct TestRegister {
     using WidthType = std::uint32_t;
-    using TestBitfield0 = rye::Bitfield<TestRegister, uint8_t, 4, 4, AccessType::ReadOnly>;
-    using TestBitfield1 = rye::Bitfield<TestRegister, uint8_t, 18, 3, AccessType::ReadOnly>;
-    using TestBitfield2 = rye::Bitfield<TestRegister, uint8_t, 7, 5, AccessType::ReadOnly>;
-    using TestBitfield3 = rye::Bitfield<TestRegister, uint8_t, 12, 9, AccessType::ReadOnly>;
-    using TestBitfield4 = rye::Bitfield<TestRegister, uint8_t, 0, 32, AccessType::ReadOnly>;
+    using TestBitfield0 = rye::Bitfield<TestRegister, uint8_t, 4, 4, Access::ReadOnly>;
+    using TestBitfield1 = rye::Bitfield<TestRegister, uint8_t, 18, 3, Access::ReadOnly>;
+    using TestBitfield2 = rye::Bitfield<TestRegister, uint8_t, 7, 5, Access::ReadOnly>;
+    using TestBitfield3 = rye::Bitfield<TestRegister, uint8_t, 12, 9, Access::ReadOnly>;
+    using TestBitfield4 = rye::Bitfield<TestRegister, uint8_t, 0, 32, Access::ReadOnly>;
 };
 
 namespace {
