@@ -93,7 +93,6 @@ def check_and_add_fieldtype(field):
             # not all fields have correct values, so check if string only
             elem = field["enumeratedValues"][key]
             if isinstance(elem, basestring) == False:
-                print elem["value"]
                 typestring += "\t\t" + elem["name"] + " = " + elem["value"] + ",\n"
         typestring = typestring[:-2] + "\n" # delete comma for last item
         typestring += "\t};\n"
