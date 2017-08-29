@@ -39,10 +39,10 @@ namespace rye {
     void atomic_write();
 
 
-    template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, Access Access>
+    template<typename Register, typename Dt, std::uint32_t Offset, std::uint32_t Width, Access Access>
     struct Bitfield {
         using RegType = typename Register::WidthType;
-        using Dt = DataType;
+        using DataType = Dt;
         static_assert(!std::is_same<DataType, void>::value, "Bitfield error: DataType must not be 'void'");
         static_assert((Offset+Width) <= std::numeric_limits<typename Register::WidthType>::digits, "Bitfield error: Invalid offset/width for Bitfield.");
 
@@ -118,7 +118,7 @@ constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write(c
     else {
         reg_value = (value<<Offset) & bitmask;
     }
-    *reg = value;
+    *reg = reg_value;
 }
 
 // -----------------------------------------------------------------------------
