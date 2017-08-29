@@ -23,6 +23,7 @@
 
 import svdparser
 import sys
+import os
 from collections import OrderedDict
 import fileinput
 
@@ -172,7 +173,10 @@ def main():
         print "Error: no such peripheral in the SVD provided"
         exit(-1)
 
-    header_file = open("header/" + device_name + "_" + strip_trailing_digits(peripheral_name.lower()) + ".hpp", "w")
+    fileURI = "header/" + device_name + "_" + strip_trailing_digits(peripheral_name.lower()) + ".hpp"
+    if not os.path.exists(os.path.dirname(fileURI)):
+        os.makedirs(os.path.dirname(fileURI))
+    header_file = open(fileURI, "w")
     header_file.write(FILE_HEADER + device_name + " {\n\nnamespace " + strip_trailing_digits(peripheral_name) + " {\n\n   // Types\n\n")
 
     peripheral = peripherals[peripheral_name]
