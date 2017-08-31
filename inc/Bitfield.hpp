@@ -49,8 +49,10 @@ namespace rye {
         static constexpr volatile DataType read();
         static constexpr DataType read(const std::uint32_t reg_number);
 
-        static constexpr void write(const DataType value);
-        static constexpr void write(const DataType value, const std::uint32_t reg_number);
+        template<typename T>
+        static constexpr void write(const T value);
+        template<typename T>
+        static constexpr void write(const T value, const std::uint32_t reg_number);
         static constexpr void set();
         static constexpr void clear();
 
@@ -84,8 +86,10 @@ constexpr DataType rye::Bitfield<Register, DataType, Offset, Width, Access>::rea
 // -----------------------------------------------------------------------------
 
 template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, rye::Access Access>
-constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write(const DataType value){
+template<typename T>
+constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write(const T value){
     static_assert(Access == Access::WriteOnly || Access == Access::ReadWrite, "Write not allowed on read-only fields.");
+    static_assert(std::is_same<T, DataType>::value, "Wrong dataype for field");
     using RegType = typename Register::WidthType;
     volatile RegType* reg = (reinterpret_cast<volatile RegType*>(Register::Address));
     auto reg_value = *reg;
@@ -105,8 +109,10 @@ constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write(c
 // -----------------------------------------------------------------------------
 
 template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, rye::Access Access>
-constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write(const DataType value, const std::uint32_t reg_number){
+template<typename T>
+constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write(const T value, const std::uint32_t reg_number){
     static_assert(Access == Access::WriteOnly || Access == Access::ReadWrite, "Write not allowed on read-only fields.");
+    static_assert(std::is_same<T, DataType>::value, "Wrong dataype for field");
     using RegType = typename Register::WidthType;
     constexpr std::size_t reg_size = sizeof(RegType);
     volatile RegType* reg = (reinterpret_cast<volatile RegType*>(Register::Address + (reg_number*reg_size)));

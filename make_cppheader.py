@@ -88,7 +88,7 @@ def check_and_add_fieldtype(field):
         if datatype in t:
             exists = True
     if exists is False:
-        typestring = "\tenum class " + datatype + "{\n"
+        typestring = "\tenum class " + datatype + " {\n"
         for key in field["enumeratedValues"]:
             # todo: remove leading digits
             # not all fields have correct values, so check if string only
