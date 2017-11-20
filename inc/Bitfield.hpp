@@ -67,7 +67,7 @@ template<typename Register, typename DataType, std::uint32_t Offset, std::uint32
 constexpr volatile DataType rye::Bitfield<Register, DataType, Offset, Width, Access>::read(){
     static_assert(Access != Access::WriteOnly, "Read not allowed on write-only fields.");
     volatile RegType& reg_value = *(reinterpret_cast<volatile RegType*>(Register::Address));
-    return ((reg_value & mask())>>Offset);
+    return static_cast<volatile DataType>((reg_value & mask())>>Offset);
 }
 
 // read with offset
@@ -79,7 +79,7 @@ constexpr DataType rye::Bitfield<Register, DataType, Offset, Width, Access>::rea
     using RegType = typename Register::WidthType;
     constexpr std::size_t reg_size = sizeof(RegType);
     volatile RegType& reg_value = *(reinterpret_cast<RegType*>(Register::Address + (reg_number*reg_size)));
-    return ((reg_value & mask())>>Offset);
+    return static_cast<volatile DataType>(((reg_value & mask())>>Offset));
 }
 
 // write
