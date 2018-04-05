@@ -39,6 +39,7 @@ types = list()
 
 # strip digits at the end of a name
 # ------------------------------------------------------------------------------
+
 def strip_trailing_digits(name):
     if name[0].isdigit():
         return name # return if all digits
@@ -140,6 +141,7 @@ def write_register(register, header_file):
 def write_peripheral(peripheral, header_file):
     header_file.write(PERIPHERAL_TEMPLATE_STRING)
     header_file.write("\tstruct Controller {\n")
+    header_file.write("\t\tstatic constexpr std::uint32_t Interrupt = Irq;\n")
     for register in peripheral["registers"].items():
         write_register(register[1], header_file)
     header_file.write("\t};")

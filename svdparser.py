@@ -25,6 +25,13 @@
 
 import xml.etree.ElementTree as et
 from collections import OrderedDict
+import re
+
+# strip non alpha-numerical characters
+# ------------------------------------------------------------------------------
+
+def sanitize(name):
+    return re.sub(r'\W+', '', name)
 
 # ------------------------------------------------------------------------------
 
@@ -35,10 +42,10 @@ def parse_individual(node):
     for a in node.attrib:
         individual[a] = node.get(a)
     if len(node.getchildren()) == 0:
-        return node.text.title()
+        return sanitize(node.text.title())
     for element in node:
         if len(list(element.iter())) == 1:
-            individual[element.tag] = element.text.title()
+            individual[element.tag] = sanitize(element.text.title())
         else:
             individual[element.tag] = parse_group(element)
     return individual
@@ -51,7 +58,7 @@ def parse_group(node):
         keytag = element.find("name")
         key = ""
         if keytag is None:
-            key = element.tag.title()
+            key = sanitize(element.tag.title())
         else:
             key = keytag.text.title()
         group[key] = parse_individual(element)
