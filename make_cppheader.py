@@ -21,6 +21,8 @@
 
 # ------------------------------------------------------------------------------
 
+#!/usr/bin/python
+
 import svdparser
 import sys
 import os
@@ -31,7 +33,7 @@ import fileinput
 
 NAMESPACE = "rye"
 
-FILE_HEADER = "\n#pragma once\n\n#include <cstdint>\n#include \"Bitfield.hpp\"\n\nusing namespace " + NAMESPACE + ";\n\nnamespace "
+FILE_HEADER = "\n#pragma once\n\n#include <cstdint>\n#include \"Bitfield.hpp\"\n\nusing namespace " + NAMESPACE + ";\n\nnamespace"
 PERIPHERAL_TEMPLATE_STRING = "\ttemplate <std::uint32_t BaseAddress, std::uint16_t Irq>\n"
 REGISTER_WIDTH_TYPE = "std::uint32_t"
 
@@ -46,6 +48,15 @@ def strip_trailing_digits(name):
         name = name[:-1]
     return name
 
+# leading digits not allowed
+# ------------------------------------------------------------------------------
+
+def move_trailing_leading_digits(name):
+    for c in name:
+        if c.isdigit():
+            name = name.replace(c, "")
+            name += c
+    return name
 
 #  different SVDs may contain different tags for elements, use one standard
 # ------------------------------------------------------------------------------
@@ -94,7 +105,7 @@ def check_and_add_fieldtype(field):
             # not all fields have correct values, so check if string only
             elem = field["enumeratedValues"][key]
             if isinstance(elem, basestring) == False:
-                typestring += "\t\t" + elem["name"] + " = " + elem["value"] + ",\n"
+                typestring += "\t\t" + move_trailing_leading_digits(elem["name"]) + " = " + elem["value"] + ",\n"
         typestring = typestring[:-2] + "\n" # delete comma for last item
         typestring += "\t};\n"
         types.append(typestring)
@@ -195,7 +206,7 @@ def main():
         if "derivedFrom" in item[1] and item[1]["derivedFrom"].title() == peripheral_name:
             write_instance(item[1], header_file)
 
-    header_file.write("\n\n} // end of namespace " + device_name)
+    header_file.write("}\n\n} // end of namespace " + device_name)
 
     header_file.close()
 
