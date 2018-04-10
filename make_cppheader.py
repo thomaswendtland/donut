@@ -33,7 +33,7 @@ import fileinput
 
 NAMESPACE = "rye"
 
-FILE_HEADER = "\n#pragma once\n\n#include <cstdint>\n#include \"Bitfield.hpp\"\n\nusing namespace " + NAMESPACE + ";\n\nnamespace"
+FILE_HEADER = "\n#pragma once\n\n#include <cstdint>\n#include \"Bitfield.hpp\"\n\nusing namespace " + NAMESPACE + ";\n\nnamespace "
 PERIPHERAL_TEMPLATE_STRING = "\ttemplate <std::uint32_t BaseAddress, std::uint16_t Irq>\n"
 REGISTER_WIDTH_TYPE = "std::uint32_t"
 
@@ -189,7 +189,7 @@ def main():
     if not os.path.exists(os.path.dirname(fileURI)):
         os.makedirs(os.path.dirname(fileURI))
     header_file = open(fileURI, "w")
-    header_file.write(FILE_HEADER + device_name + " {\n\nnamespace " + strip_trailing_digits(peripheral_name) + " {\n\n   // Types\n\n")
+    header_file.write(FILE_HEADER + device_name + " {\nnamespace Hardware {\n\nnamespace " + strip_trailing_digits(peripheral_name) + " {\n\n   // Types\n\n")
 
     peripheral = peripherals[peripheral_name]
 
@@ -206,7 +206,7 @@ def main():
         if "derivedFrom" in item[1] and item[1]["derivedFrom"].title() == peripheral_name:
             write_instance(item[1], header_file)
 
-    header_file.write("}\n\n} // end of namespace " + device_name)
+    header_file.write("}\n\n}\n} // end of namespace " + device_name)
 
     header_file.close()
 
