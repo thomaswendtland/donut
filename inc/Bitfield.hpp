@@ -44,6 +44,7 @@ namespace rye {
         using RegType = typename Register::WidthType;
         using DataType = Dt;
         static_assert(!std::is_same<DataType, void>::value, "Bitfield error: DataType must not be 'void'");
+        static_assert(std::numeric_limits<Dt>::digits <= Width, "Width for field exceeds type's number of bits");
         static_assert((Offset+Width) <= std::numeric_limits<typename Register::WidthType>::digits, "Bitfield error: Invalid offset/width for Bitfield.");
 
         static constexpr volatile DataType read();
