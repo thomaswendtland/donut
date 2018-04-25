@@ -79,7 +79,7 @@ constexpr DataType rye::Bitfield<Register, DataType, Offset, Width, Access>::rea
     static_assert(Access != Access::WriteOnly, "Read not allowed on write-only fields.");
     using RegType = typename Register::WidthType;
     constexpr std::size_t reg_size = sizeof(RegType);
-    volatile RegType& reg_value = *(reinterpret_cast<RegType*>(Register::Address + (reg_number*reg_size)));
+    volatile RegType& reg_value = *(reinterpret_cast<RegType*>(Register::Address + (reg_number*Register::Width)));
     return static_cast<volatile DataType>(((reg_value & mask())>>Offset));
 }
 
@@ -116,7 +116,7 @@ constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write(c
     static_assert(std::is_same<T, DataType>::value, "Wrong dataype for field");
     using RegType = typename Register::WidthType;
     constexpr std::size_t reg_size = sizeof(RegType);
-    volatile RegType* reg = (reinterpret_cast<volatile RegType*>(Register::Address + (reg_number*reg_size)));
+    volatile RegType* reg = (reinterpret_cast<volatile RegType*>(Register::Address + (reg_number*Register::Width)));
     auto reg_value = *reg;
     constexpr auto bitmask = mask();
     if (Access == Access::ReadWrite){
