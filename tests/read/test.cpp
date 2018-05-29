@@ -1,5 +1,5 @@
 
-// Copyright 2017 Thomas Wendtland
+// Copyright 2018 Thomas Wendtland
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@
 
 using namespace rye;
 
+// -----------------------------------------------------------------------------
+
 static std::uint32_t TestMemoryLocation[2] = {0};
 
 struct TestRegister {
@@ -41,6 +43,8 @@ namespace {
     // order of values here: value in memory, value exptected
     constexpr std::uint32_t TestValues[] = {0x30, 0x3, 0x14000, 0x14, };
 }
+
+// -----------------------------------------------------------------------------
 
 int main(int argc, char** argv){
 

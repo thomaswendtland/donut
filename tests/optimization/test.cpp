@@ -30,16 +30,10 @@ struct TestRegister {
     using TestBitfield = rye::Bitfield<TestRegister, std::uint16_t, 12, 9, Access::ReadWrite>;
 };
 
-int main(int argc, char** argv){
-    // do it the manual way
-    //volatile auto test = (*((volatile TestRegister::WidthType*)TestRegister::Address) & 0x1FF000) >> 12;
-    //
-    //volatile auto reg_value = TestRegister::TestBitfield::read();
+// -----------------------------------------------------------------------------
 
-    // do it the manual way
-    // *((volatile TestRegister::WidthType*)TestRegister::Address) &= ~0x1ff000;
-    // *((volatile TestRegister::WidthType*)TestRegister::Address) |= (0x5<<12)&0x1ff000;
-    //
+int main(int argc, char** argv){
+
     TestRegister::TestBitfield::write(0x5);
     TestRegister::TestBitfield::write(0x7);
 
