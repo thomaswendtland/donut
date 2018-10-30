@@ -32,7 +32,7 @@ import fileinput
 # ------------------------------------------------------------------------------
 
 NAMESPACE = "rye"
-INNER_NAMESPACE = "Hardware"
+INNER_NAMESPACE = "hardware"
 
 FILE_HEADER = "\n#pragma once\n\n#include <cstdint>\n#include \"Bitfield.hpp\"\n\nusing namespace " + NAMESPACE + ";\n\nnamespace "
 PERIPHERAL_TEMPLATE_STRING = "\ttemplate <std::uint32_t BaseAddress, std::uint16_t Irq>\n"
@@ -164,7 +164,7 @@ def write_instance(instance, header_file):
     interrupt = "0xFF"
     if "interrupt" in instance:
         interrupt = instance["interrupt"]["Value"]
-    header_file.write("\n\tusing " + instance["name"].title() + " = " + INNER_NAMESPACE + "::" + strip_trailing_digits(instance["name"].title()) + "::Controller<" + instance["baseAddress"] + ", " + interrupt + ">;")
+    header_file.write("\n\tusing " + instance["name"].title() + " = " + INNER_NAMESPACE + "::" + strip_trailing_digits(instance["name"].title().lower()) + "::Controller<" + instance["baseAddress"] + ", " + interrupt + ">;")
 
 # ------------------------------------------------------------------------------
 
@@ -191,7 +191,7 @@ def main():
     if not os.path.exists(os.path.dirname(fileURI)):
         os.makedirs(os.path.dirname(fileURI))
     header_file = open(fileURI, "w")
-    header_file.write(FILE_HEADER + device_name + " {\nnamespace " + INNER_NAMESPACE + " {\nnamespace " + strip_trailing_digits(peripheral_name) + " {\n\n   // Types\n\n")
+    header_file.write(FILE_HEADER + device_name + " {\nnamespace " + INNER_NAMESPACE + " {\nnamespace " + strip_trailing_digits(peripheral_name).lower() + " {\n   // Types\n\n")
 
     peripheral = peripherals[peripheral_name]
 
@@ -208,7 +208,7 @@ def main():
         if "derivedFrom" in item[1] and item[1]["derivedFrom"].title() == peripheral_name:
             write_instance(item[1], header_file)
 
-    header_file.write("\n} // end of namespace " + device_name)
+    header_file.write("\n} // end of namespace " + device_name + "\n")
 
     header_file.close()
 

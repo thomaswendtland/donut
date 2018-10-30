@@ -39,21 +39,20 @@ struct TestRegister {
 uint64_t TestRegister::Address = (std::uint64_t)&TestMemoryLocation;
 
 namespace {
-    constexpr std::uint32_t TestValues[] = {0x34, 0x1};
+    constexpr std::uint16_t TestValues[] = {0x34, 0x1};
 }
 
 // -----------------------------------------------------------------------------
 
 int main(int argc, char** argv){
-
-    for (std::uint32_t i = 0;i<sizeof(TestValues)/sizeof(std::uint32_t);i++){
+    for (std::uint32_t i = 0;i<sizeof(TestValues)/sizeof(std::uint16_t);i++){
         TestRegister::TestBitfield::write(TestValues[i]);
         auto read_value = TestRegister::TestBitfield::read();
         printf("write_value: %i - read_value : %i\n", TestValues[i], read_value);
         assert(read_value == TestValues[i]);
     }
 
-    for (std::uint32_t i = 0;i<sizeof(TestValues)/sizeof(std::uint32_t);i++){
+    for (std::uint32_t i = 0;i<sizeof(TestValues)/sizeof(std::uint16_t);i++){
         TestRegister::TestBitfield::write(TestValues[i], 1);
         auto read_value = TestRegister::TestBitfield::read(1);
         printf("write_value: %i - read_value : %i\n", TestValues[i], read_value);
