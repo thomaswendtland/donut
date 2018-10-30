@@ -1,5 +1,5 @@
 
-// Copyright 2017 Thomas Wendtland
+// Copyright 2018 Thomas Wendtland
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with \the License.
@@ -44,6 +44,7 @@ namespace rye {
         using RegType = typename Register::WidthType;
         using DataType = Dt;
         static_assert(!std::is_same<DataType, void>::value, "Bitfield error: DataType must not be 'void'");
+        static_assert(Width <= std::numeric_limits<Dt>::digits, "Width for field exceeds type's number of bits");
         static_assert((Offset+Width) <= std::numeric_limits<typename Register::WidthType>::digits, "Bitfield error: Invalid offset/width for Bitfield.");
 
         static constexpr volatile DataType read();
@@ -67,7 +68,7 @@ template<typename Register, typename DataType, std::uint32_t Offset, std::uint32
 constexpr volatile DataType rye::Bitfield<Register, DataType, Offset, Width, Access>::read(){
     static_assert(Access != Access::WriteOnly, "Read not allowed on write-only fields.");
     volatile RegType& reg_value = *(reinterpret_cast<volatile RegType*>(Register::Address));
-    return ((reg_value & mask())>>Offset);
+    return static_cast<volatile DataType>((reg_value & mask())>>Offset);
 }
 
 // read with offset
@@ -78,8 +79,8 @@ constexpr DataType rye::Bitfield<Register, DataType, Offset, Width, Access>::rea
     static_assert(Access != Access::WriteOnly, "Read not allowed on write-only fields.");
     using RegType = typename Register::WidthType;
     constexpr std::size_t reg_size = sizeof(RegType);
-    volatile RegType& reg_value = *(reinterpret_cast<RegType*>(Register::Address + (reg_number*reg_size)));
-    return ((reg_value & mask())>>Offset);
+    volatile RegType& reg_value = *(reinterpret_cast<RegType*>(Register::Address + (reg_number*Register::Width)));
+    return static_cast<volatile DataType>(((reg_value & mask())>>Offset));
 }
 
 // write
@@ -115,7 +116,7 @@ constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write(c
     static_assert(std::is_same<T, DataType>::value, "Wrong dataype for field");
     using RegType = typename Register::WidthType;
     constexpr std::size_t reg_size = sizeof(RegType);
-    volatile RegType* reg = (reinterpret_cast<volatile RegType*>(Register::Address + (reg_number*reg_size)));
+    volatile RegType* reg = (reinterpret_cast<volatile RegType*>(Register::Address + (reg_number*Register::Width)));
     auto reg_value = *reg;
     constexpr auto bitmask = mask();
     if (Access == Access::ReadWrite){

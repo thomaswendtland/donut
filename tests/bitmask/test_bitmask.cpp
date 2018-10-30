@@ -1,5 +1,5 @@
 
-// Copyright 2017 Thomas Wendtland
+// Copyright 2018 Thomas Wendtland
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,19 +26,23 @@
 
 using namespace rye;
 
+// -----------------------------------------------------------------------------
+
 struct TestRegister {
     using WidthType = std::uint32_t;
     using TestBitfield0 = rye::Bitfield<TestRegister, uint8_t, 4, 4, Access::ReadOnly>;
     using TestBitfield1 = rye::Bitfield<TestRegister, uint8_t, 18, 3, Access::ReadOnly>;
     using TestBitfield2 = rye::Bitfield<TestRegister, uint8_t, 7, 5, Access::ReadOnly>;
-    using TestBitfield3 = rye::Bitfield<TestRegister, uint8_t, 12, 9, Access::ReadOnly>;
-    using TestBitfield4 = rye::Bitfield<TestRegister, uint8_t, 0, 32, Access::ReadOnly>;
+    using TestBitfield3 = rye::Bitfield<TestRegister, uint16_t, 12, 9, Access::ReadOnly>;
+    using TestBitfield4 = rye::Bitfield<TestRegister, uint32_t, 0, 32, Access::ReadOnly>;
 };
 
 namespace {
     // order of values here: offset, width, expected mask
     constexpr std::uint32_t TestValues[] = { 0xF0, 0x1C0000, 0xF80, 0x1FF000, 0xFFFFFFFF};
 }
+
+// -----------------------------------------------------------------------------
 
 int main(int argc, char** argv){
 

@@ -1,5 +1,5 @@
 
-# Copyright 2017 Thomas Wendtland
+# Copyright 2018 Thomas Wendtland
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@
 
 # ------------------------------------------------------------------------------
 
+#!/usr/bin/python
+
 import svdparser
 import sys
 import os
@@ -30,6 +32,7 @@ import fileinput
 # ------------------------------------------------------------------------------
 
 NAMESPACE = "rye"
+INNER_NAMESPACE = "Hardware"
 
 FILE_HEADER = "\n#pragma once\n\n#include <cstdint>\n#include \"Bitfield.hpp\"\n\nusing namespace " + NAMESPACE + ";\n\nnamespace "
 PERIPHERAL_TEMPLATE_STRING = "\ttemplate <std::uint32_t BaseAddress, std::uint16_t Irq>\n"
@@ -47,6 +50,15 @@ def strip_trailing_digits(name):
         name = name[:-1]
     return name
 
+# leading digits not allowed
+# ------------------------------------------------------------------------------
+
+def move_trailing_leading_digits(name):
+    for c in name:
+        if c.isdigit():
+            name = name.replace(c, "")
+            name += c
+    return name
 
 #  different SVDs may contain different tags for elements, use one standard
 # ------------------------------------------------------------------------------
@@ -95,7 +107,7 @@ def check_and_add_fieldtype(field):
             # not all fields have correct values, so check if string only
             elem = field["enumeratedValues"][key]
             if isinstance(elem, basestring) == False:
-                typestring += "\t\t" + elem["name"] + " = " + elem["value"] + ",\n"
+                typestring += "\t\t" + move_trailing_leading_digits(elem["name"]) + " = " + elem["value"] + ",\n"
         typestring = typestring[:-2] + "\n" # delete comma for last item
         typestring += "\t};\n"
         types.append(typestring)
@@ -152,7 +164,7 @@ def write_instance(instance, header_file):
     interrupt = "0xFF"
     if "interrupt" in instance:
         interrupt = instance["interrupt"]["Value"]
-    header_file.write("\n\tusing " + instance["name"].title() + " = " + strip_trailing_digits(instance["name"].title()) + "::Controller<" + instance["baseAddress"] + ", " + interrupt + ">;")
+    header_file.write("\n\tusing " + instance["name"].title() + " = " + INNER_NAMESPACE + "::" + strip_trailing_digits(instance["name"].title()) + "::Controller<" + instance["baseAddress"] + ", " + interrupt + ">;")
 
 # ------------------------------------------------------------------------------
 
@@ -179,7 +191,7 @@ def main():
     if not os.path.exists(os.path.dirname(fileURI)):
         os.makedirs(os.path.dirname(fileURI))
     header_file = open(fileURI, "w")
-    header_file.write(FILE_HEADER + device_name + " {\n\nnamespace " + strip_trailing_digits(peripheral_name) + " {\n\n   // Types\n\n")
+    header_file.write(FILE_HEADER + device_name + " {\nnamespace " + INNER_NAMESPACE + " {\nnamespace " + strip_trailing_digits(peripheral_name) + " {\n\n   // Types\n\n")
 
     peripheral = peripherals[peripheral_name]
 
@@ -187,7 +199,7 @@ def main():
     if "derivedFrom" in peripheral:
         peripheral_name = peripheral["derivedFrom"].title()
     write_peripheral(peripherals[peripheral_name], header_file)
-    header_file.write("\n\n}")
+    header_file.write("\n\n}\n}")
     # write the parent as an instance
     write_instance(peripherals[peripheral_name], header_file)
 
@@ -196,7 +208,7 @@ def main():
         if "derivedFrom" in item[1] and item[1]["derivedFrom"].title() == peripheral_name:
             write_instance(item[1], header_file)
 
-    header_file.write("\n\n} // end of namespace " + device_name)
+    header_file.write("\n} // end of namespace " + device_name)
 
     header_file.close()
 
