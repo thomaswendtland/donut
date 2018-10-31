@@ -137,7 +137,7 @@ def write_field(register, field, header_file):
 def write_register(register, header_file):
     header_file.write(TAB + TAB + "struct " + register["name"].title() + " {\n")
     header_file.write(TAB + TAB + TAB + "using WidthType = " + REGISTER_WIDTH_TYPE + ";\n")
-    header_file.write(TAB + TAB + TAB + "static constexpr WidthType* Address = BaseAddress + " + register["addressOffset"].lower() + ";\n")
+    header_file.write(TAB + TAB + TAB + "static constexpr std::uint32_t Address = BaseAddress + " + register["addressOffset"].lower() + ";\n")
     if "fields" in register:
         for field in register["fields"].items():
             write_field(register, field[1], header_file)

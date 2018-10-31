@@ -40,7 +40,6 @@ namespace rye {
         using RegType = typename Register::WidthType;
         using DataType = Dt;
         static_assert(!std::is_same<DataType, void>::value, "Bitfield error: DataType must not be 'void'");
-        static_assert(Width <= std::numeric_limits<DataType>::digits, "Width for field exceeds type's number of bits");
         static_assert((Offset+Width) <= std::numeric_limits<RegType>::digits, "Bitfield error: Invalid offset/width for Bitfield.");
 
         static constexpr volatile DataType read();
@@ -139,12 +138,13 @@ constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write_i
     volatile RegType* reg = reinterpret_cast<volatile RegType*>(addr);
     auto reg_value = *reg;
     constexpr auto bitmask = mask();
+    const std::uint32_t valueAsUint = static_cast<std::uint32_t>(value);
     if (Access == Access::ReadWrite){
         reg_value &= ~bitmask;
-        reg_value |= (value<<Offset) & bitmask;
+        reg_value |= (valueAsUint<<Offset) & bitmask;
     }
     else {
-        reg_value = (value<<Offset) & bitmask;
+        reg_value = (valueAsUint<<Offset) & bitmask;
     }
     *reg = reg_value;
 }
