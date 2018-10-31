@@ -135,7 +135,7 @@ def write_field(register, field, header_file):
 def write_register(register, header_file):
     header_file.write("\t\tstruct " + register["name"].title() + " {\n")
     header_file.write("\t\t\tusing WidthType = " + REGISTER_WIDTH_TYPE + ";\n")
-    header_file.write("\t\t\tstatic constexpr WidthType Address = BaseAddress + " + register["addressOffset"].lower() + ";\n")
+    header_file.write("\t\t\tstatic constexpr WidthType* Address = BaseAddress + " + register["addressOffset"].lower() + ";\n")
     if "fields" in register:
         for field in register["fields"].items():
             write_field(register, field[1], header_file)
