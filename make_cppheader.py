@@ -39,6 +39,7 @@ TAB = "    "
 FILE_HEADER = "\n#pragma once\n\n#include <cstdint>\n#include \"Bitfield.hpp\"\n\nusing namespace " + NAMESPACE + ";\n\nnamespace "
 PERIPHERAL_TEMPLATE_STRING = TAB + "template <std::uint32_t BaseAddress, std::uint16_t Irq>\n"
 REGISTER_WIDTH_TYPE = "std::uint32_t"
+POINTER_WIDTH_TYPE = "std::uint32_t"
 
 types = list()
 
@@ -137,7 +138,7 @@ def write_field(register, field, header_file):
 def write_register(register, header_file):
     header_file.write(TAB + TAB + "struct " + register["name"].title() + " {\n")
     header_file.write(TAB + TAB + TAB + "using WidthType = " + REGISTER_WIDTH_TYPE + ";\n")
-    header_file.write(TAB + TAB + TAB + "static constexpr std::uint32_t Address = BaseAddress + " + register["addressOffset"].lower() + ";\n")
+    header_file.write(TAB + TAB + TAB + "static constexpr " + POINTER_WIDTH_TYPE + " Address = BaseAddress + " + register["addressOffset"].lower() + ";\n")
     if "fields" in register:
         for field in register["fields"].items():
             write_field(register, field[1], header_file)

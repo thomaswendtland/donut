@@ -138,7 +138,7 @@ constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write_i
     volatile RegType* reg = reinterpret_cast<volatile RegType*>(addr);
     auto reg_value = *reg;
     constexpr auto bitmask = mask();
-    const std::uint32_t valueAsUint = static_cast<std::uint32_t>(value);
+    const RegType valueAsUint = static_cast<RegType>(value);
     if (Access == Access::ReadWrite){
         reg_value &= ~bitmask;
         reg_value |= (valueAsUint<<Offset) & bitmask;
