@@ -34,8 +34,10 @@ import fileinput
 NAMESPACE = "rye"
 INNER_NAMESPACE = "hardware"
 
+TAB = "    "
+
 FILE_HEADER = "\n#pragma once\n\n#include <cstdint>\n#include \"Bitfield.hpp\"\n\nusing namespace " + NAMESPACE + ";\n\nnamespace "
-PERIPHERAL_TEMPLATE_STRING = "\ttemplate <std::uint32_t BaseAddress, std::uint16_t Irq>\n"
+PERIPHERAL_TEMPLATE_STRING = TAB + "template <std::uint32_t BaseAddress, std::uint16_t Irq>\n"
 REGISTER_WIDTH_TYPE = "std::uint32_t"
 
 types = list()
@@ -101,15 +103,15 @@ def check_and_add_fieldtype(field):
         if datatype in t:
             exists = True
     if exists is False:
-        typestring = "\tenum class " + datatype + " {\n"
+        typestring = TAB + "enum class " + datatype + " {\n"
         for key in field["enumeratedValues"]:
             # todo: remove leading digits
             # not all fields have correct values, so check if string only
             elem = field["enumeratedValues"][key]
             if isinstance(elem, basestring) == False:
-                typestring += "\t\t" + move_trailing_leading_digits(elem["name"]) + " = " + elem["value"] + ",\n"
+                typestring += TAB + TAB + move_trailing_leading_digits(elem["name"]) + " = " + elem["value"] + ",\n"
         typestring = typestring[:-2] + "\n" # delete comma for last item
-        typestring += "\t};\n"
+        typestring += TAB + "};\n"
         types.append(typestring)
     return datatype
 
@@ -128,14 +130,14 @@ def write_field(register, field, header_file):
 
     template_params = [register["name"].title(), datatype, field["bitOffset"], field["bitWidth"], field["access"]]
 
-    header_file.write("\t\t\tusing " + field["name"].title() + " = Bitfield<" + ", ".join(template_params) + ">;\n")
+    header_file.write(TAB + TAB + TAB + "using " + field["name"].title() + " = Bitfield<" + ", ".join(template_params) + ">;\n")
 
 # ------------------------------------------------------------------------------
 
 def write_register(register, header_file):
-    header_file.write("\t\tstruct " + register["name"].title() + " {\n")
-    header_file.write("\t\t\tusing WidthType = " + REGISTER_WIDTH_TYPE + ";\n")
-    header_file.write("\t\t\tstatic constexpr WidthType* Address = BaseAddress + " + register["addressOffset"].lower() + ";\n")
+    header_file.write(TAB + TAB + "struct " + register["name"].title() + " {\n")
+    header_file.write(TAB + TAB + TAB + "using WidthType = " + REGISTER_WIDTH_TYPE + ";\n")
+    header_file.write(TAB + TAB + TAB + "static constexpr WidthType* Address = BaseAddress + " + register["addressOffset"].lower() + ";\n")
     if "fields" in register:
         for field in register["fields"].items():
             write_field(register, field[1], header_file)
@@ -146,17 +148,17 @@ def write_register(register, header_file):
         field["bitWidth"] = "32"
         field["access"] = "read-write"
         write_field(register, field, header_file)
-    header_file.write("\t\t};\n")
+    header_file.write(TAB + TAB + "};\n")
 
 # ------------------------------------------------------------------------------
 
 def write_peripheral(peripheral, header_file):
     header_file.write(PERIPHERAL_TEMPLATE_STRING)
-    header_file.write("\tstruct Controller {\n")
-    header_file.write("\t\tstatic constexpr std::uint32_t Interrupt = Irq;\n")
+    header_file.write(TAB + "struct Controller {\n")
+    header_file.write(TAB + TAB + "static constexpr std::uint32_t Interrupt = Irq;\n")
     for register in peripheral["registers"].items():
         write_register(register[1], header_file)
-    header_file.write("\t};")
+    header_file.write(TAB + "};")
 
 # ------------------------------------------------------------------------------
 
@@ -164,7 +166,7 @@ def write_instance(instance, header_file):
     interrupt = "0xFF"
     if "interrupt" in instance:
         interrupt = instance["interrupt"]["Value"]
-    header_file.write("\n\tusing " + instance["name"].title() + " = " + INNER_NAMESPACE + "::" + strip_trailing_digits(instance["name"].title().lower()) + "::Controller<" + instance["baseAddress"] + ", " + interrupt + ">;")
+    header_file.write("\n" + TAB + "using " + instance["name"].title() + " = " + INNER_NAMESPACE + "::" + strip_trailing_digits(instance["name"].title().lower()) + "::Controller<" + instance["baseAddress"] + ", " + interrupt + ">;")
 
 # ------------------------------------------------------------------------------
 
