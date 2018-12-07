@@ -1,5 +1,5 @@
 
-# Copyright 2017 Thomas Wendtland
+# Copyright 2018 Thomas Wendtland
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,17 +21,18 @@
 
 # ------------------------------------------------------------------------------
 
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import xml.etree.ElementTree as et
 from collections import OrderedDict
 import re
+import json
 
 # strip non alpha-numerical characters
 # ------------------------------------------------------------------------------
 
 def sanitize(name):
-    return re.sub(r'\W+', '', name)
+    return re.sub(r'[^0-9a-zA-Z ]', '', name).lower()
 
 # ------------------------------------------------------------------------------
 
@@ -40,14 +41,14 @@ def parse_individual(node):
         return OrderedDict()
     individual = OrderedDict()
     for a in node.attrib:
-        individual[a] = node.get(a)
+        individual[sanitize(a)] = node.get(a).lower()
     if len(node.getchildren()) == 0:
-        return sanitize(node.text.title())
+        return sanitize(node.text)
     for element in node:
         if len(list(element.iter())) == 1:
-            individual[element.tag] = sanitize(element.text.title())
+            individual[sanitize(element.tag)] = sanitize(element.text)
         else:
-            individual[element.tag] = parse_group(element)
+            individual[sanitize(element.tag)] = parse_group(element)
     return individual
 
 # ------------------------------------------------------------------------------
@@ -58,25 +59,24 @@ def parse_group(node):
         keytag = element.find("name")
         key = ""
         if keytag is None:
-            key = sanitize(element.tag.title())
+            key = sanitize(element.tag)
         else:
-            key = keytag.text.title()
-        group[key] = parse_individual(element)
+            key = keytag.text.lower()
+        group[sanitize(key)] = parse_individual(element)
 
     return group
 
 # ------------------------------------------------------------------------------
 
-def run(file):
+def parse(file):
     try:
         device_node = et.parse(file).getroot()
     except:
-        print "SVD parser: invalid file"
+        print("svdparser.py: invalid file")
         return None
     peripherals_node = device_node.find("peripherals")
     device = OrderedDict()
 
     peripherals = parse_group(peripherals_node)
-    device[device_node.find("name").text.title()] = peripherals
-    #print device
+    device[sanitize(device_node.find("name").text)] = peripherals
     return device

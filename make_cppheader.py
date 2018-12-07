@@ -28,6 +28,7 @@ import sys
 import os
 from collections import OrderedDict
 import fileinput
+import json
 
 # ------------------------------------------------------------------------------
 
@@ -175,16 +176,25 @@ def main():
     generate_types = False
     if len(sys.argv) != 3:
         print "Usage: makecpp_header.py SVDFILE PERIPHERAL"
-        exit(-1)
+        #exit(-1)
 
     svd_filename = sys.argv[1]
     peripheral_name = sys.argv[2].title()
     device_as_dict = svdparser.run(svd_filename)
     if device_as_dict is None:
+        print "Error parsing the SVD file"
         exit(-1)
 
     device_name = device_as_dict.items()[0][0].lower()
     peripherals = device_as_dict.items()[0][1]
+
+    jstr = json.dumps(device_as_dict, sort_keys=True, indent=4, separators=(',', ': '))
+    j = json.loads(jstr)
+    for (k, v) in j.items():
+        print ("Key: " + k)
+        for (a,b) in v.items():
+            print a
+    exit(-1)
 
     if peripheral_name not in peripherals:
         print "Error: no such peripheral in the SVD provided"

@@ -1,4 +1,3 @@
-
 // Copyright 2018 Thomas Wendtland
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -122,7 +121,7 @@ constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::clear()
 template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, rye::Access Access>
 template<typename T>
 constexpr DataType rye::Bitfield<Register, DataType, Offset, Width, Access>::read_impl(const T addr){
-    static_assert(Access != Access::WriteOnly, "Read not allowed on write-only fields.");
+    static_assert(Access != rye::Access::WriteOnly, "Read not allowed on write-only fields.");
     volatile RegType& reg_value = *(reinterpret_cast<RegType*>(addr));
     return static_cast<volatile DataType>(((reg_value & mask())>>Offset));
 }
@@ -133,13 +132,13 @@ constexpr DataType rye::Bitfield<Register, DataType, Offset, Width, Access>::rea
 template<typename Register, typename DataType, std::uint32_t Offset, std::uint32_t Width, rye::Access Access>
 template<typename T, typename U>
 constexpr void rye::Bitfield<Register, DataType, Offset, Width, Access>::write_impl(const T value, const U addr){
-    static_assert(Access == Access::WriteOnly || Access == Access::ReadWrite, "Write not allowed on read-only fields.");
+    static_assert(Access == rye::Access::WriteOnly || Access == rye::Access::ReadWrite, "Write not allowed on read-only fields.");
     static_assert(std::is_same<T, DataType>::value, "Wrong dataype for field");
     volatile RegType* reg = reinterpret_cast<volatile RegType*>(addr);
     auto reg_value = *reg;
     constexpr auto bitmask = mask();
     const RegType valueAsUint = static_cast<RegType>(value);
-    if (Access == Access::ReadWrite){
+    if (Access == rye::Access::ReadWrite){
         reg_value &= ~bitmask;
         reg_value |= (valueAsUint<<Offset) & bitmask;
     }
